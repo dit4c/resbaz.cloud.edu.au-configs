@@ -1,0 +1,16 @@
+#cloud-config
+
+manage_etc_hosts: "localhost"
+coreos:
+  update:
+    reboot-strategy: "etcd-lock"
+  etcd2:
+    discovery: "https://discovery.etcd.io/0eaecb1c9ecbf7646d3856304cb9bf0b"
+    advertise-client-urls: "http://$public_ipv4:2379"
+    initial-advertise-peer-urls: "http://$public_ipv4:2380"
+    listen-client-urls: "http://0.0.0.0:2379"
+    listen-peer-urls: "http://$public_ipv4:2380"
+  units:
+    - name: "etcd2.service"
+      command: "start"
+      enable: true

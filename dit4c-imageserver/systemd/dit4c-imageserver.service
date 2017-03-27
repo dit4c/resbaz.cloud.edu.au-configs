@@ -1,0 +1,11 @@
+[Unit]
+Description=DIT4C image server
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/rkt --dns=8.8.8.8 run --volume tls,kind=host,source=/etc/tls,readOnly=true https://github.com/dit4c/dit4c-imageserver-swift/releases/download/0.1.1/dit4c-imageserver-swift.linux.amd64.aci --set-env-file /etc/dit4c-imageserver.env --port https:443 --mount volume=tls,target=/tls
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

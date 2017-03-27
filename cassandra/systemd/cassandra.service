@@ -1,0 +1,13 @@
+[Unit]
+Description=Apache Cassandra
+Requires=var-lib-cassandra.mount
+OnFailure=status-alert@%n.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/rkt run --net=host --hostname=cassandra --hosts-entry=127.0.0.1=cassandra --interactive --volume cassandra-yaml,kind=host,source=/etc/cassandra/cassandra.yaml --volume cassandra-rackdc,kind=host,source=/etc/cassandra/cassandra-rackdc.properties --volume volume-var-lib-cassandra,kind=host,source=/var/lib/cassandra https://github.com/dit4c/container-cassandra-etcd/releases/download/0.1.0/cassandra-etcd.linux.amd64.aci --mount volume=cassandra-yaml,target=/etc/cassandra/cassandra.yaml --mount volume=cassandra-rackdc,target=/etc/cassandra/cassandra-rackdc.properties
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

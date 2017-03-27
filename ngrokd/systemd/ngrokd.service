@@ -1,0 +1,11 @@
+[Unit]
+Description=ngrokd
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/rkt run --insecure-options=image --port 3000-tcp:443 --port ngrok-client-port:4443 --volume tls-data,kind=host,source=/etc/tls https://github.com/dit4c/dit4c-helper-listener-ngrok1/releases/download/0.0.2/ngrokd.linux.amd64.aci --mount volume=tls-data,target=/tls-data -- -log-level=INFO -domain=per.containers.dit4c.cloud.unimelb.edu.au -httpAddr "" -httpsAddr 127.0.0.1:443 -tlsCrt=/tls-data/server.crt -tlsKey=/tls-data/server.key -tunnelAddr :4443 --- https://github.com/dit4c/dockerfile-nghttpx/releases/download/1.1.1/nghttpx.linux.amd64.aci --mount volume=tls-data,target=/tls-data --exec /usr/bin/nghttpx -- -f *,3000;tls -b 127.0.0.1,443;;tls -k --add-forwarded=host,proto --no-ocsp /tls-data/server.key /tls-data/server.crt
+Restart=always
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,11 @@
+[Unit]
+Description=dit4c-routingserver-ssh
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/rkt run --dns=8.8.8.8 --insecure-options=image --port 3000-tcp:443 --port ssh:2222 --volume tls-data,kind=host,source=/etc/tls https://github.com/dit4c/dit4c-routingserver-ssh/releases/download/v0.1.1/dit4c-routingserver-ssh.linux.amd64.aci --mount volume=tls-data,target=/tls-data --set-env ROUTING_SCHEME=https --set-env ROUTING_DOMAIN=mel.containers.dit4c.cloud.unimelb.edu.au --set-env PGP_LOOKUPURL='https://resbaz.cloud.edu.au/instances/<REMOTE_USER>/pgp-keys' -- --- https://github.com/dit4c/dockerfile-nghttpx/releases/download/1.1.1/nghttpx.linux.amd64.aci --mount volume=tls-data,target=/tls-data --exec /usr/bin/nghttpx -- -f *,3000;tls -b 127.0.0.1,80 -k --backend-read-timeout=1440m --add-forwarded=host,proto --no-ocsp /tls-data/server.key /tls-data/server.crt
+Restart=always
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target

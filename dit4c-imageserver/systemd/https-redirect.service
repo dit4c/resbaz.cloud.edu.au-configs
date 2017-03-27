@@ -1,0 +1,11 @@
+[Unit]
+Description=HTTPS redirect
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/rkt run --dns=8.8.8.8 https://swift.rc.nectar.org.au:8888/v1/AUTH_faa5bca1140a4824bfc96215c92498dd/dit4c-public-images/dit4c-https-redirect-latest.aci --port 3000-tcp:80
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

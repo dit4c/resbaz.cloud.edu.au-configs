@@ -1,0 +1,8 @@
+[Unit]
+Description=Alert for %i to IFTTT
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'systemctl status --lines=1000 --full %i | /opt/backup-scripts/alert_to_ifttt_maker.sh https://maker.ifttt.com/trigger/resapps_system_alert/with/key/ihrN-Ljn-I5jK0000e2PO00007nZ20000B0ZC00008e "%m - %H" "%i"'
+User=nobody
+Group=systemd-journal

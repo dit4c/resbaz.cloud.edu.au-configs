@@ -1,0 +1,68 @@
+#cloud-config
+
+manage_etc_hosts: "localhost"
+ssh_authorized_keys:
+  - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDhtqe3HBtmvmMcgfqyrQxv7RTrMPoMI9OcD5RZb8tDcj8xeLaUN+So9bF2OQbpVEsuPb7koR7eEeHc8NfFcuu3ip11bQuUllNKedj/6WKhv1B92eEnF5wAoo7FXBQb/Q3OCFbhJ36X6T8fcYlL+XFyqbGw3sB4xr5vJ3My1xCICEGbZzqjHTyfRlUsbXaGOc48eYXGTbOa+2GgeSeZ00XmOW8M7sWMAlh/WaleLd7M/gQp9GPlOdLrbzclVe6wry/ZLvLKvVtdSQqV3ZXufAAKIcZ+sLnfUaPCeZECexvvWPN519ixF8lH3BgJhdr3NQvy3tFiwgDSQXGmrUktFcQn ResBaz Hobart 2017 scheduler"
+coreos:
+  update:
+    reboot-strategy: "off"
+  units:
+    - name: format-ephemeral.service
+      command: start
+      content: |
+        [Unit]
+        Description=Formats the ephemeral drive
+        After=dev-vdb.device
+        Requires=dev-vdb.device
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        ExecStart=/usr/sbin/wipefs -f /dev/vdb
+        ExecStart=/usr/sbin/mkfs.ext4 -F /dev/vdb
+        ExecStart=/usr/bin/mkdir -p /var/lib/dit4c-rkt/dit4c-volumes/images
+    - name: var-lib-dit4c\x2drkt-dit4c\x2dvolumes-images.mount
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=Mount ephemeral to /var/lib/dit4c-rkt/dit4c-volumes/images
+        Requires=format-ephemeral.service
+        After=format-ephemeral.service
+        [Mount]
+        What=/dev/vdb
+        Where=/var/lib/dit4c-rkt/dit4c-volumes/images
+        Type=ext4
+    - name: "dit4c-rkt-gc.service"
+      command: "start"
+      content: |
+        [Unit]
+        Description=DIT4C rkt garbage collection
+        [Service]
+        Type=oneshot
+        RemainAfterExit=no
+        ExecStart=/usr/bin/rkt --dir /var/lib/dit4c-rkt gc --grace-period=60m
+        ExecStart=/usr/bin/rkt --dir /var/lib/dit4c-rkt image gc --grace-period=168h
+    - name: "dit4c-rkt-gc.timer"
+      command: "start"
+      enable: true
+      content: |
+        [Unit]
+        Description=Run DIT4C rkt garbage collection regularly
+        [Timer]
+        OnBootSec=15min
+        OnUnitActiveSec=15min
+        [Install]
+        WantedBy=timers.target
+    - name: "entropy-source.service"
+      command: "start"
+      enable: true
+      content: |
+        [Unit]
+        Description=Provide entropy source via haveged
+        [Service]
+        Type=simple
+        ExecStart=/usr/bin/rkt run --insecure-options image,capabilities docker://dit4c/haveged
+        Restart=always
+        RestartSec=30
+        [Install]
+        WantedBy=multi-user.target

@@ -1,0 +1,12 @@
+[Unit]
+Description=DIT4C scheduler
+After=var-lib-cassandra.mount
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/rkt run --no-store --dns=8.8.8.8 --hostname=dit4c-scheduler --hosts-entry=127.0.0.1=dit4c-scheduler --volume cassandra-data,kind=host,source=/var/lib/cassandra --volume=scheduler-conf,kind=host,source=/etc/dit4c-scheduler,readOnly=true https://swift.rc.nectar.org.au:8888/v1/AUTH_faa5bca1140a4824bfc96215c92498dd/dit4c-public-images/dit4c-scheduler.linux.amd64.aci --mount volume=scheduler-conf,target=/conf -- --keys /conf/scheduler_keys.asc --listener-image https://swift.rc.nectar.org.au:8888/v1/AUTH_faa5bca1140a4824bfc96215c92498dd/dit4c-public-images/dit4c-helper-listener-ssh.linux.amd64.aci --auth-image https://swift.rc.nectar.org.au:8888/v1/AUTH_faa5bca1140a4824bfc96215c92498dd/dit4c-public-images/dit4c-helper-auth-portal.linux.amd64.aci --portal-uri https://resbaz.cloud.edu.au/messaging/scheduler --config /conf/scheduler.conf --- https://github.com/dit4c/container-cassandra-etcd/releases/download/0.1.0/cassandra-etcd.linux.amd64.aci --mount volume=cassandra-data,target=/var/lib/cassandra
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

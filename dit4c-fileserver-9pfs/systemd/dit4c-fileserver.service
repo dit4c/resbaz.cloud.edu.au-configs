@@ -1,0 +1,11 @@
+[Unit]
+Description=DIT4C file server
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/rkt --dns=8.8.8.8 run --volume data,kind=host,source=/var/lib/fileserver https://swift.rc.nectar.org.au:8888/v1/AUTH_faa5bca1140a4824bfc96215c92498dd/dit4c-public-images/dit4c-fileserver-9pfs.linux.amd64.aci --set-env DIT4C_PORTAL=resbaz.cloud.edu.au --port ssh:2222
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

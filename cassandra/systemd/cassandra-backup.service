@@ -1,0 +1,10 @@
+[Unit]
+Description=Cassandra backup to Swift
+OnFailure=status-alert@%n.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/environment
+EnvironmentFile=/etc/cassandra-backup.env
+ExecStart=/bin/sh -c 'set -e && set -o pipefail && /opt/backup-scripts/cassandra-backup.sh | gzip -c | /opt/backup-scripts/backup-to-swift.sh https://swift.rc.nectar.org.au:8888/v1/AUTH_faa5bca1140a4824bfc96215c92498dd backups/prod/cassandra-%m- .tar.gz | gzip -t'
+User=core

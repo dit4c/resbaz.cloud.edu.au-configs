@@ -1,0 +1,11 @@
+[Unit]
+Description=DIT4C portal
+
+[Service]
+Type=simple
+ExecStart=/bin/bash -c 'OS_DC=$$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone) && exec /usr/bin/rkt run --no-store --dns=8.8.8.8 --hostname=dit4c-portal --hosts-entry=127.0.0.1=dit4c-portal --volume tls,kind=host,source=/etc/tls,readOnly=true --volume=conf,kind=host,source=/etc/dit4c-portal,readOnly=true https://swift.rc.nectar.org.au:8888/v1/AUTH_faa5bca1140a4824bfc96215c92498dd/dit4c-public-images/dit4c-portal.linux.amd64.aci --mount volume=conf,target=/conf --port ssh:2222 -- -Dcassandra-settings.local-datacenter=$${OS_DC} -Dconfig.file=/conf/prod.conf --- https://github.com/dit4c/dockerfile-nghttpx/releases/download/1.1.1/nghttpx.linux.amd64.aci --mount volume=conf,target=/data/conf --mount volume=tls,target=/data/tls --port 3000-tcp:443 -- --conf=/data/conf/nghttpx.conf --backend=127.0.0.1,9000 /data/tls/server.key /data/tls/server.crt'
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target3

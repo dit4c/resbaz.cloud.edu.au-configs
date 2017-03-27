@@ -1,0 +1,43 @@
+#!/bin/bash
+
+set -e
+
+# Trim whitespace off a string
+trim() {
+  tr -d '[[:space:]]'
+}
+
+# Utility function for parsing OpenStack CLI tool table output to get a value.
+# $1 -> key to lookup
+# eg. value_from_table 'id'
+value_from_table() {
+  grep ' '$1 | cut -d '|' -f 3 | trim
+}
+
+PREFIX=$1
+CLOUD_CONFIG=$2
+NUM=${3:-1}
+COMPUTE_FLAVOR=${COMPUTE_FLAVOR:-m2.small}
+SECURITY_GROUP=${SECURITY_GROUP:-dit4c-compute}
+IMAGE_ID=$(openstack image list | grep "CoreOS" | head -1 | cut -d "|" -f 2 | trim)
+COMPUTE_AZ=${COMPUTE_AZ:-melbourne-qh2-uom}
+SSH_KEY=${SSH_KEY:-DIT4C}
+START_NUM=${START_NUM:-1}
+
+echo "Using image:"
+openstack image show $IMAGE_ID
+
+HINTS=""
+for i in $(eval echo {$START_NUM..$NUM})
+do
+  CN_NAME=$(printf "%s-%02d" $(echo $PREFIX | tr '[:upper:]' '[:lower:]') $i)
+  echo $CN_NAME
+  # Nova instance creation
+  INSTANCE_ID=$(openstack server create \
+    --flavor $COMPUTE_FLAVOR --image $IMAGE_ID \
+    --availability-zone $COMPUTE_AZ --security-group $SECURITY_GROUP \
+    --key-name $SSH_KEY \
+    --user-data $CLOUD_CONFIG $HINTS \
+    --wait $CN_NAME | value_from_table 'id')
+  HINTS="$HINTS --hint different_host=$INSTANCE_ID"
+done

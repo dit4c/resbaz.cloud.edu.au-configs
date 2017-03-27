@@ -1,0 +1,9 @@
+[Unit]
+Description=Run cassandra-backup multiple times per day
+
+[Timer]
+OnBootSec=15min
+OnUnitActiveSec=6h
+
+[Install]
+WantedBy=timers.target
